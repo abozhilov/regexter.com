@@ -1,0 +1,196 @@
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>JavaScript Regular epxressions test and debug</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/site.css" />
+		<script type="text/javascript" src="js/regexter.js"></script>
+	</head>
+	<body onload="regexter.send({immediate: true})">
+	    <h1 id="logo">Regexter.com <span class="beta">BETA</span></h1>	    
+	    <p class="slogan">JavaScript RegExp test and debug<br />achieved with <a href="http://code.google.com/p/besen/">BESEN</a></p>
+	    
+        <form action="" method="post">
+            <table class="regex-pane" cellspacing="0" cellpadding="0">            
+                <tr>
+                    <td class="regex-label"><strong>re</strong></td>
+                    <td>
+                        <input id="regex-field" onkeydown="regexter.send({immediate: false})" tabindex="2" type="text" name="regex" /> 
+                    </td>                 
+                </tr>
+                <tr>
+                    <td class="regex-label"><strong>flags</strong></td>
+                    <td>
+                        <input onchange="regexter.send({immediate: true})" tabindex="3" type="checkbox" name="ignorecase" id="case-insensitive" />
+                        <label for="case-insensitive">Ignore case</label>
+                        <input onchange="regexter.send({immediate: true})" tabindex="4" type="checkbox" name="global" id="global-search" />
+                        <label for="global-search">Global search</label>                        
+                        <input onchange="regexter.send({immediate: true})" tabindex="5" type="checkbox" name="multiline" id="multiline-search" />
+                        <label for="multiline-search">Multiline</label>  
+                        <span id="regex-error" class="error-msg"></span>                                              
+                    </td>
+
+                </tr>
+                <tr>
+                    <td class="regex-label val_t"><strong>data</strong></td>
+                    <td>
+                        <textarea onkeydown="regexter.send({immediate: false})" id="regex-data" tabindex="6" name="data" cols="50" rows="20"></textarea>
+                    </td>
+
+                </tr>
+                <tr>
+                    <td class="regex-label val_t"><strong>debug</strong></td>
+                    <td>
+                        <div id="debug-holder">
+                            <pre>Not available</pre>
+                        </div>
+                    </td>
+
+                </tr>                 
+                <tr>
+
+                    <td class="regex-label val_t"><a href="#man" class="hide" onclick="return regexter.showHide(this, 'man');">man</a></td>
+                    <td>
+                        <div style="display: none;" id="man">
+		                    <table class="reference-tbl" cellspacing="0" summary="Regular expressions reference">
+			                    <tbody>
+				                    <tr>
+					                    <td><code>.</code></td>
+
+					                    <td>Any character except newline.</td>
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>\.</code></td>
+					                    <td>A period (and so on for <code>\*</code>, <code>\(</code>, <code>\\</code>, etc.)</td>
+
+				                    </tr>
+				                    <tr>
+					                    <td><code>^</code></td>
+					                    <td>The start of the string.</td>
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>$</code></td>
+
+					                    <td>The end of the string.</td>
+				                    </tr>
+				                    <tr>
+					                    <td><code>\d</code>,<code>\w</code>,<code>\s</code></td>
+					                    <td>A digit, word character <code>[A-Za-z0-9_]</code>, or whitespace.</td>
+
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>\D</code>,<code>\W</code>,<code>\S</code></td>
+					                    <td>Anything except a digit, word character, or whitespace.</td>
+				                    </tr>
+
+				                    <tr>
+
+					                    <td><code>[abc]</code></td>
+					                    <td>Character a, b, or c.</td>
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>[a-z]</code></td>
+					                    <td>a through z.</td>
+
+				                    </tr>
+
+				                    <tr>
+					                    <td><code>[^abc]</code></td>
+					                    <td>Any character except a, b, or c.</td>
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>aa|bb</code></td>
+
+					                    <td>Either aa or bb.</td>
+
+				                    </tr>
+				                    <tr>
+					                    <td><code>?</code></td>
+					                    <td>Zero or one of the preceding element.</td>
+				                    </tr>
+				                    <tr class="altBg">
+
+					                    <td><code>*</code></td>
+
+					                    <td>Zero or more of the preceding element.</td>
+				                    </tr>
+				                    <tr>
+					                    <td><code>+</code></td>
+					                    <td>One or more of the preceding element.</td>
+
+				                    </tr>
+				                    <tr class="altBg">
+
+					                    <td><code>{<em>n</em>}</code></td>
+					                    <td>Exactly <em>n</em> of the preceding element.</td>
+				                    </tr>
+
+				                    <tr>
+					                    <td><code>{<em>n</em>,}</code></td>
+
+					                    <td><em>n</em> or more of the preceding element.</td>
+				                    </tr>
+				                    <tr class="altBg">
+
+					                    <td><code>{<em>m</em>,<em>n</em>}</code></td>
+					                    <td>Between <em>m</em> and <em>n</em> of the preceding element.</td>
+
+				                    </tr>
+				                    <tr>
+					                    <td><code>??</code>,<code>*?</code>,<code>+?</code>,<br/><code>{<em>n</em>}?</code>, etc.</td>
+					                    <td>Same as above, but as few as possible.</td>
+
+				                    </tr>
+				                    <tr class="altBg">
+					                    <td><code>(</code><em>expr</em><code>)</code></td>
+					                    <td>Capture <em>expr</em> for use with <code>\1</code>, etc.</td>
+
+				                    </tr>
+				                    <tr>
+					                    <td><code>(?:</code><em>expr</em><code>)</code></td>
+					                    <td>Non-capturing group.</td>
+				                    </tr>
+				                    <tr class="altBg">
+
+					                    <td><code>(?=</code><em>expr</em><code>)</code></td>
+
+					                    <td>Followed by <em>expr</em>.</td>
+				                    </tr>
+				                    <tr>
+					                    <td><code>(?!</code><em>expr</em><code>)</code></td>
+
+					                    <td>Not followed by <em>expr</em>.</td>
+
+				                    </tr>
+			                    </tbody>
+		                    </table>
+		                    <p><a href="https://developer.mozilla.org/en/Core_JavaScript_1.5_Reference/Global_Objects/RegExp#Special_characters_in_regular_expressions">Near-complete reference</a></p>
+
+                        </div>
+
+                    </td>
+                </tr> 
+                <tr>
+                    <td class="regex-label val_t"><strong>credits</strong></td>
+                    <td>
+                        <div id="credits">
+                            <ul>
+                                <li>Reference table in man section by <a href="http://regexpal.com/">RegexPal</a> and <a href="http://osteele.com/tools/rework/">reWork</a> by Oliver Steele</li>    
+                                <li>Debug mode is inspired by <a href="http://www.regexbuddy.com/">RegexBuddy</a></li>                            
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="regex-label val_t"><strong>license</strong></td>
+                    <td>LGPL 2013, <a href="http://twitter.com/abozhilov">@abozhilov</a></td>
+                </tr>
+                <tr>
+                    <td class="regex-label val_t"><strong>github</strong></td>
+                    <td><a href="https://github.com/abozhilov/regexter.com">https://github.com/abozhilov/regexter.com</a></td>
+                </tr>                                                                                    
+            </table>
+        </form>
+	</body>
+</html>
