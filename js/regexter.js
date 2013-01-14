@@ -88,19 +88,19 @@ var regexter = {};
              rows = dStr.match(reg),           
              buffer = [],
              globalStart = 0,
-             prevIdx;
+             prevIdx, succeed;
         if (rows) {      
             for (var i = 0, len = rows.length; i < len; i++) {
                 var match = rows[i], 
                     idx = +(/\d+/.exec(match)[0]),
                     ch = /ch="(.)/.exec(match),
-                    cStr = data.slice(globalStart, idx) + (ch && ch[1] || ''),
-                    succeed = match.slice(-7) == SUCCEED;;
+                    cStr = data.slice(globalStart, idx) + (ch && ch[1] || '');
                     
-                if (idx <= prevIdx) {
+                if (!succeed && idx <= prevIdx) {
                     buffer[buffer.length - 1] += BACKTRACK;
                 }
-                                
+                
+                succeed = match.slice(-7) == SUCCEED;                
                 if (succeed) {                    
                     buffer.push('<span class="match">Match found</span>');
                     globalStart = idx;
