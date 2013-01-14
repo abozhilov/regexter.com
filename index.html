@@ -11,7 +11,7 @@
 	    <h1 id="logo">Regexter.com <span class="beta">BETA</span></h1>	    
 	    <p class="slogan">JavaScript RegExp test and debug<br />achieved with <a href="http://code.google.com/p/besen/">BESEN</a></p>
 	    
-        <form action="" method="post">
+        <form action="" method="post" onsubmit="return false;">
             <table class="regex-pane" cellspacing="0" cellpadding="0">            
                 <tr>
                     <td class="regex-label"><strong>re</strong></td>
@@ -192,5 +192,16 @@
                 </tr>                                                                                    
             </table>
         </form>
+        <script type="text/javascript">
+            var _gaq = _gaq || [];
+            _gaq.push(['_setAccount', 'UA-26447684-1']);
+            _gaq.push(['_trackPageview']);
+
+            (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+            })();
+        </script>        
 	</body>
 </html>
