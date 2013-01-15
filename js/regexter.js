@@ -2,7 +2,8 @@ var regexter = {};
 (function () {
     var DEBUG_HOLDER = 'debug-holder',
          SUCCEED = 'SUCCEED',
-         BACKTRACK = '<span class="fail">backtrack</span>';
+         BACKTRACK = '<span class="fail">backtrack</span>',
+         RUNAWAY_BACKTRACKING = 'Please double check your regular expression.\nSeems you have catastrophic backtracking.\nMore about runaway regular expressions: <a href="http://www.regular-expressions.info/catastrophic.html">http://www.regular-expressions.info/catastrophic.html</a>';
     
     var timer;
     regexter.send = function (params) {
@@ -62,7 +63,7 @@ var regexter = {};
     
     regexter.output = function(debug) {
         var debugHolder = document.getElementById(DEBUG_HOLDER);
-        debugHolder.innerHTML = debug;
+        debugHolder.innerHTML = '<pre>' + debug + '</pre>';
     };
          
     regexter.getDebug = function (reg, data) {
@@ -72,8 +73,13 @@ var regexter = {};
         xhr.open('POST', 'processing.php', true);
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                regexter.output(parseDebug(xhr.responseText, data));
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    regexter.output(parseDebug(xhr.responseText, data));
+                }
+                else if (xhr.status == 500) {
+                    regexter.output(RUNAWAY_BACKTRACKING);
+                }
             }    
         }
         xhr.send(post);      
@@ -111,14 +117,12 @@ var regexter = {};
                 }                
             }
             
-            return '<pre>' + 
-                    buffer.join('\n') +
+            return buffer.join('\n') +
                     (!succeed ? '\n<span class="fail">Match failed</span>' : '') +
                     '\n======================\n' +
-                    'Total steps: ' + buffer.length + 
-                    '</pre>';           
+                    'Total steps: ' + buffer.length;           
         }
         
-        return '<pre>' + dStr + '</pre>';
+        return dStr;
     }
 })();
