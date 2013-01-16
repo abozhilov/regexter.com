@@ -10,6 +10,14 @@ var regexter = {};
          TOO_MUCH_BACKTRACK = '<span class="fail">Too much backtracking</span>',
          UNEXPECTED_ERROR = '<span class="fail">Unexpected error</span>';
     
+    var HTML_ESCAPE_CHARS = {
+        '<' : '&lt;',
+        '>' : '&gt;',
+        '&' : '&amp;',
+        "'" : '&quot;',
+        '"' : '&#039;'
+    };
+    
     var timer;
     regexter.send = function (params) {
         function processing() {
@@ -70,6 +78,12 @@ var regexter = {};
         var debugHolder = document.getElementById(DEBUG_HOLDER);
         debugHolder.innerHTML = '<pre>' + debug + '</pre>';
     };
+    
+    regexter.escapeHTML = function (str) {
+        return str.replace(/[<>&'"]/g, function (ch) {
+            return HTML_ESCAPE_CHARS[ch];
+        });
+    };
          
     regexter.getDebug = function (reg, data) {
         var xhr = typeof XMLHttpRequest != 'undefined' ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP'),
@@ -99,13 +113,13 @@ var regexter = {};
              rows = dStr.match(reg),           
              buffer = [],
              globalStart = 0,
+             cStr = '',
              prevIdx, succeed;
         if (rows) {      
             for (var i = 0, len = rows.length; i < len; i++) {
                 var match = rows[i];
                     idx = +(/\d+/.exec(match) || [])[0],
-                    ch = /ch="(.)/.exec(match),
-                    cStr = data.slice(globalStart, idx) + (ch && ch[1] || '');
+                    ch = (/ch="(.)/.exec(match) || ['', ''])[1];
                 
                 if (match == TIMEOUT) {
                     buffer.push(TOO_MUCH_BACKTRACK);
@@ -114,16 +128,19 @@ var regexter = {};
                                     
                 if (!succeed && idx <= prevIdx) {
                     buffer[buffer.length - 1] += BACKTRACK;
+                    cStr = data.slice(globalStart, idx);
                 }
                 
+                cStr += ch;
                 succeed = match.slice(-7) == SUCCEED;                
                 if (succeed) {                    
                     buffer.push(MATCH_FOUND);
                     globalStart = idx;
+                    cStr = '';
                 }
                 else {
                     prevIdx = idx;
-                    buffer.push('<span class="processing">' + cStr + '</span>');
+                    buffer.push('<span class="processing">' + regexter.escapeHTML(cStr) + '</span>');
                 }                
             }
             
