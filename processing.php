@@ -1,5 +1,6 @@
 <?php
-    define('JS_CODE', "setRegExpDebugMode(1); '%s'.match(%s);");
+    define('MAX_BYTECODE_STEPS', max(pow(strlen($_POST['data']), 2) * 2, 100));
+    define('JS_CODE', "setRegExpTimeOutSteps(" . MAX_BYTECODE_STEPS . "); setRegExpDebugMode(1); '%s'.match(%s);");
     define('REG_LITERAL', '/^\/(?:\[(?:\x5C.|[^\x5C\]])*\]|\x5C.|[^\x5C\[\/])+\/[gim]*$/');
     define('BESEN', './bin/besen');
     

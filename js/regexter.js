@@ -2,8 +2,13 @@ var regexter = {};
 (function () {
     var DEBUG_HOLDER = 'debug-holder',
          SUCCEED = 'SUCCEED',
+         TIMEOUT = 'TIMEOUT',
+         
+         MATCH_FOUND = '<span class="match">Match found</span>',
+         MATCH_FAIL = '<span class="fail">Match failed</span>',
          BACKTRACK = '<span class="fail">backtrack</span>',
-         RUNAWAY_BACKTRACKING = 'Please double check your regular expression.\nSeems you have catastrophic backtracking.\nMore about runaway regular expressions: <a href="http://www.regular-expressions.info/catastrophic.html">http://www.regular-expressions.info/catastrophic.html</a>';
+         TOO_MUCH_BACKTRACK = '<span class="fail">Too much backtracking</span>',
+         UNEXPECTED_ERROR = '<span class="fail">Unexpected error</span>';
     
     var timer;
     regexter.send = function (params) {
@@ -77,8 +82,8 @@ var regexter = {};
                 if (xhr.status == 200) {
                     regexter.output(parseDebug(xhr.responseText, data));
                 }
-                else if (xhr.status == 500) {
-                    regexter.output(RUNAWAY_BACKTRACKING);
+                else if (xhr.status > 400) {
+                    regexter.output(UNEXPECTED_ERROR);
                 }
             }    
         }
@@ -90,25 +95,30 @@ var regexter = {};
     }
 
     function parseDebug(dStr, data) {
-        var reg = /index=[^\n]+?result=[^\n]+|index=[^\n]+[^:]+: (?:BRK|NBRK|SUCCEED)/g,
+        var reg = /index=[^\n]+?result=[^\n]+|index=[^\n]+[^:]+: (?:BRK|NBRK|SUCCEED)|TIMEOUT/g,
              rows = dStr.match(reg),           
              buffer = [],
              globalStart = 0,
              prevIdx, succeed;
         if (rows) {      
             for (var i = 0, len = rows.length; i < len; i++) {
-                var match = rows[i], 
-                    idx = +(/\d+/.exec(match)[0]),
+                var match = rows[i];
+                    idx = +(/\d+/.exec(match) || [])[0],
                     ch = /ch="(.)/.exec(match),
                     cStr = data.slice(globalStart, idx) + (ch && ch[1] || '');
-                    
+                
+                if (match == TIMEOUT) {
+                    buffer.push(TOO_MUCH_BACKTRACK);
+                    break;
+                }                
+                                    
                 if (!succeed && idx <= prevIdx) {
                     buffer[buffer.length - 1] += BACKTRACK;
                 }
                 
                 succeed = match.slice(-7) == SUCCEED;                
                 if (succeed) {                    
-                    buffer.push('<span class="match">Match found</span>');
+                    buffer.push(MATCH_FOUND);
                     globalStart = idx;
                 }
                 else {
@@ -118,7 +128,7 @@ var regexter = {};
             }
             
             return buffer.join('\n') +
-                    (!succeed ? '\n<span class="fail">Match failed</span>' : '') +
+                    (!succeed ? '\n' + MATCH_FAIL : '') +
                     '\n======================\n' +
                     'Total steps: ' + buffer.length;           
         }
