@@ -1,6 +1,7 @@
 var regexter = {};
 (function () {
     var DEBUG_HOLDER = 'debug-holder',
+         MAX_CHARS_LINE = 100,
          SUCCEED = 'SUCCEED',
          TIMEOUT = 'TIMEOUT',
          
@@ -84,6 +85,14 @@ var regexter = {};
             return HTML_ESCAPE_CHARS[ch];
         });
     };
+    
+    regexter.truncate = function (str) {
+        if (str.length > MAX_CHARS_LINE) {
+            str = '... ' + str.slice(-MAX_CHARS_LINE);
+        }
+        return str.replace(/[\n\r]/g, '');
+    };
+    
          
     regexter.getDebug = function (reg, data) {
         var xhr = typeof XMLHttpRequest != 'undefined' ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP'),
@@ -116,13 +125,13 @@ var regexter = {};
              cStr = '',
              prevIdx, succeed;
         if (rows) {      
-            for (var i = 0, len = rows.length; i < len; i++) {
+            for (var i = 0, line = 1, len = rows.length; i < len; i++, line++) {
                 var match = rows[i];
                     idx = +(/\d+/.exec(match) || [])[0],
                     ch = (/ch="(.)/.exec(match) || ['', ''])[1];
                 
                 if (match == TIMEOUT) {
-                    buffer.push(TOO_MUCH_BACKTRACK);
+                    buffer.push('<span class="line-number">' + line + '</span>' + TOO_MUCH_BACKTRACK);
                     break;
                 }                
                                     
@@ -134,18 +143,18 @@ var regexter = {};
                 cStr += ch;
                 succeed = match.slice(-7) == SUCCEED;                
                 if (succeed) {                    
-                    buffer.push(MATCH_FOUND);
+                    buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FOUND);
                     globalStart = idx;
                     cStr = '';
                 }
                 else {
                     prevIdx = idx;
-                    buffer.push('<span class="processing">' + regexter.escapeHTML(cStr) + '</span>');
+                    buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(cStr)) + '</span>');
                 }                
             }
-            
+            if (!succeed) buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FAIL);
+ 
             return buffer.join('\n') +
-                    (!succeed ? '\n' + MATCH_FAIL : '') +
                     '\n======================\n' +
                     'Total steps: ' + buffer.length;           
         }

@@ -186,6 +186,18 @@ code {
     overflow: auto;
 }
 
+#debug-holder {
+    line-height: 17px;
+}
+
+.line-number {
+    display: inline-block;
+    padding: 0 5px;
+    min-width: 30px;
+    text-align: right;
+    background-color: #E5E5E5;
+}
+
 /*reference table*/
 .reference-tbl {
     border: 1px solid #000000;
