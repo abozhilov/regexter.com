@@ -118,36 +118,35 @@ var regexter = {};
     }
 
     function parseDebug(dStr, data) {
-        var reg = /index=[^\n]+?result=[^\n]+|index=[^\n]+[^:]+: (?:BRK|NBRK|SUCCEED)|TIMEOUT/g,
+        var reg = /index=[^\n]+?result=[^\n]+|index=[^\n]+[^:]+: (?:BOL|EOL|BRK|NBRK|SUCCEED)|TIMEOUT/g,
              rows = dStr.match(reg),           
              buffer = [],
              globalStart = 0,
-             cStr = '',
-             prevIdx, succeed;
+             prevIdx, succeed,
+             zLength;
         if (rows) {      
             for (var i = 0, line = 1, len = rows.length; i < len; i++, line++) {
                 var match = rows[i];
                     idx = +(/\d+/.exec(match) || [])[0],
-                    ch = (/ch="(.)/.exec(match) || ['', ''])[1];
+                    ch = (/ch="(.)/.exec(match) || ['', ''])[1],
+                    cStr = data.slice(globalStart, idx) + ch;
                 
                 if (match == TIMEOUT) {
                     buffer.push('<span class="line-number">' + line + '</span>' + TOO_MUCH_BACKTRACK);
                     break;
                 }                
                                     
-                if (!succeed && idx <= prevIdx) {
+                if (!succeed && !zLength && idx <= prevIdx) {
                     buffer[buffer.length - 1] += BACKTRACK;
-                    cStr = data.slice(globalStart, idx);
                 }
                 
-                cStr += ch;
                 succeed = match.slice(-7) == SUCCEED;                
                 if (succeed) {                    
                     buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FOUND);
                     globalStart = idx;
-                    cStr = '';
                 }
                 else {
+                    zLength = /BOL|EOL|BRK|NBRK/.test(match);
                     prevIdx = idx;
                     buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(cStr)) + '</span>');
                 }                
