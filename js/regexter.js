@@ -2,14 +2,22 @@ var regexter = {};
 (function () {
     var DEBUG_HOLDER = 'debug-holder',
          MAX_CHARS_LINE = 100,
-         SUCCEED = 'SUCCEED',
-         TIMEOUT = 'TIMEOUT',
          
          MATCH_FOUND = '<span class="match">Match found</span>',
          MATCH_FAIL = '<span class="fail">Match failed</span>',
          BACKTRACK = '<span class="fail">backtrack</span>',
          TOO_MUCH_BACKTRACK = '<span class="fail">Too much backtracking</span>',
          UNEXPECTED_ERROR = '<span class="fail">Unexpected error</span>';
+    
+      
+    var SUCCEED = 'SUCCEED',
+         TIMEOUT = 'TIMEOUT',
+         Z_WIDTH_TOKEN = {
+            BRK  : 1,
+            NBRK : 1,
+            BOL  : 1,
+            EOL  : 1
+         };
     
     var HTML_ESCAPE_CHARS = {
         '<' : '&lt;',
@@ -112,52 +120,50 @@ var regexter = {};
         }
         xhr.send(post);      
     };
-    
-    function parseMatch(data) {
-    
-    }
 
     function parseDebug(dStr, data) {
-        var reg = /index=[^\n]+?result=[^\n]+|index=[^\n]+[^:]+: (?:BOL|EOL|BRK|NBRK|SUCCEED)|TIMEOUT/g,
-             rows = dStr.match(reg),           
-             buffer = [],
-             globalStart = 0,
-             prevIdx, succeed,
-             zLength;
-        if (rows) {      
-            for (var i = 0, line = 1, len = rows.length; i < len; i++, line++) {
-                var match = rows[i];
-                    idx = +(/\d+/.exec(match) || [])[0],
+        var reg = /index[^\n]+\n[^:]+: (?:CHAR|BOL|EOL|BRK|NBRK|SUCCEED)|TIMEOUT/g,
+            tokenReg = /CHAR|BOL|EOL|BRK|NBRK|SUCCEED|TIMEOUT/,
+            res = dStr.match(reg),
+            buffer = [],
+            globalIdx = 0,
+            line = 1,
+            prevIdx, prevToken;
+            
+        if (res) {
+            for (var i = 0, len = res.length; i < len; i++) {
+                var match = res[i],
+                    token = tokenReg.exec(match),
+                    idx = +/\d+/.exec(match),
                     ch = (/ch="(.)/.exec(match) || ['', ''])[1],
-                    cStr = data.slice(globalStart, idx) + ch;
+                    currStr = data.slice(globalIdx, idx) + ch;
                 
-                if (match == TIMEOUT) {
+                if (token == TIMEOUT) {
                     buffer.push('<span class="line-number">' + line + '</span>' + TOO_MUCH_BACKTRACK);
-                    break;
-                }                
-                                    
-                if (!succeed && !zLength && idx <= prevIdx) {
-                    buffer[buffer.length - 1] += BACKTRACK;
+                    break;                    
                 }
-                
-                succeed = match.slice(-7) == SUCCEED;                
-                if (succeed) {                    
+                else if (token == SUCCEED) {
                     buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FOUND);
-                    globalStart = idx;
+                    globalIdx = idx;                    
                 }
                 else {
-                    zLength = /BOL|EOL|BRK|NBRK/.test(match);
-                    prevIdx = idx;
-                    buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(cStr)) + '</span>');
-                }                
+                    if (!Z_WIDTH_TOKEN[prevToken] && prevToken != SUCCEED && idx <= prevIdx) {
+                        buffer[buffer.length - 1] += BACKTRACK;    
+                    }
+                    buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(currStr)) + '</span>');
+                }
+                    
+                prevToken = token;
+                prevIdx = idx;
+                line++;
             }
-            if (!succeed) buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FAIL);
- 
+            if (token != SUCCEED) {
+                buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FAIL);    
+            }
             return buffer.join('\n') +
                     '\n======================\n' +
-                    'Total steps: ' + buffer.length;           
+                    'Total steps: ' + buffer.length;;
         }
-        
         return dStr;
     }
 })();
