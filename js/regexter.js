@@ -27,23 +27,60 @@ var regexter = {};
         '"' : '&#039;'
     };
     
+    var IS_LOCAL_STORAGE = typeof localStorage != 'undefined',
+        REG_KEY = 'regexp',
+        FLAGS_KEY = 'flags',
+        DATA_KEY = 'data';
+        
+        
+    var regexp, data,
+        regErr, global, 
+        ignoreCase, multiline;
+        
+    regexter.init = function () {
+        regexp = document.getElementById('regex-field');
+        data = document.getElementById('regex-data');
+        regErr = document.getElementById('regex-error');
+        global = document.getElementById('global-search');
+        ignoreCase = document.getElementById('case-insensitive');
+        multiline = document.getElementById('multiline-search');
+        
+        if (IS_LOCAL_STORAGE) {
+            var flags = localStorage.getItem(FLAGS_KEY);
+            regexp.value = localStorage.getItem(REG_KEY);            
+            if (flags) regexter.setFlags(flags);
+            data.value = localStorage.getItem(DATA_KEY);
+        }                
+        regexter.send({immediate: true});
+    };
+    
+    regexter.getFlags = function () {
+        return '' + (global.checked ? 'g' : '') +  (ignoreCase.checked ? 'i' : '') + (multiline.checked ? 'm' : '');
+    };
+    
+    regexter.setFlags = function (flags) {
+        if (flags.indexOf('g') > -1) {
+            global.checked = true;
+        }
+        if (flags.indexOf('i') > -1) {
+            ignoreCase.checked = true;
+        }
+        if (flags.indexOf('m') > -1) {
+            multiline.checked = true;
+        }                
+    };
+    
     var timer;
     regexter.send = function (params) {
         function processing() {
-            var regexp = document.getElementById('regex-field'),
-                data = document.getElementById('regex-data'),
-                err = document.getElementById('regex-error'),
-                g = document.getElementById('global-search'),
-                i = document.getElementById('case-insensitive'),
-                m = document.getElementById('multiline-search'),
-                flags = '' + (g.checked ? 'g' : '') +  (i.checked ? 'i' : '') + (m.checked ? 'm' : ''),
+            var flags = regexter.getFlags(),
                 regstr = '/' + regexp.value + '/' + flags;
                            
             try {
                 new RegExp('\/' + regexp.value + '\/' + flags);
-                err.innerHTML = '';
+                regErr.innerHTML = '';
             } catch (e) {
-                err.innerHTML = e;
+                regErr.innerHTML = e;
                 regexter.flush();
                 return;
             }
@@ -53,7 +90,13 @@ var regexter = {};
             }
             else {
                 regexter.flush();
-            }     
+            }
+            
+            if (IS_LOCAL_STORAGE) {
+                localStorage.setItem(REG_KEY, regexp.value);   
+                localStorage.setItem(FLAGS_KEY, flags);
+                localStorage.setItem(DATA_KEY, data.value);
+            }
         };
         
         clearTimeout(timer);
