@@ -142,14 +142,16 @@ var regexter = {};
                     buffer.push('<span class="line-number">' + line + '</span>' + TOO_MUCH_BACKTRACK);
                     break;                    
                 }
-                else if (token == SUCCEED) {
+                
+                if (!Z_WIDTH_TOKEN[prevToken] && prevToken != SUCCEED && idx <= prevIdx) {
+                    buffer[buffer.length - 1] += BACKTRACK;    
+                }
+                
+                if (token == SUCCEED) {
                     buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FOUND);
                     globalIdx = idx;                    
                 }
                 else {
-                    if (!Z_WIDTH_TOKEN[prevToken] && prevToken != SUCCEED && idx <= prevIdx) {
-                        buffer[buffer.length - 1] += BACKTRACK;    
-                    }
                     buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(currStr)) + '</span>');
                 }
                     
