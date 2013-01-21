@@ -1,23 +1,24 @@
 var regexter = {};
 (function () {
-    var DEBUG_HOLDER = 'debug-holder',
-         MAX_CHARS_LINE = 100,
+    var BASE_URL = 'http://regexter.com', 
+        DEBUG_HOLDER = 'debug-holder',
+        MAX_CHARS_LINE = 100,
          
-         MATCH_FOUND = '<span class="match">Match found</span>',
-         MATCH_FAIL = '<span class="fail">Match failed</span>',
-         BACKTRACK = '<span class="fail">backtrack</span>',
-         TOO_MUCH_BACKTRACK = '<span class="fail">Too much backtracking</span>',
-         UNEXPECTED_ERROR = '<span class="fail">Unexpected error</span>';
+        MATCH_FOUND = '<span class="match">Match found</span>',
+        MATCH_FAIL = '<span class="fail">Match failed</span>',
+        BACKTRACK = '<span class="fail">backtrack</span>',
+        TOO_MUCH_BACKTRACK = '<span class="fail">Too much backtracking</span>',
+        UNEXPECTED_ERROR = '<span class="fail">Unexpected error</span>';
     
       
     var SUCCEED = 'SUCCEED',
-         TIMEOUT = 'TIMEOUT',
-         Z_WIDTH_TOKEN = {
+        TIMEOUT = 'TIMEOUT',
+        Z_WIDTH_TOKEN = {
             BRK  : 1,
             NBRK : 1,
             BOL  : 1,
             EOL  : 1
-         };
+        };
     
     var HTML_ESCAPE_CHARS = {
         '<' : '&lt;',
@@ -35,7 +36,8 @@ var regexter = {};
         
     var regexp, data,
         regErr, global, 
-        ignoreCase, multiline;
+        ignoreCase, multiline,
+        permalink;
         
     regexter.init = function () {
         regexp = document.getElementById('regex-field');
@@ -44,14 +46,47 @@ var regexter = {};
         global = document.getElementById('global-search');
         ignoreCase = document.getElementById('case-insensitive');
         multiline = document.getElementById('multiline-search');
+        permalink = document.getElementById('permalink');
         
-        if (IS_LOCAL_STORAGE) {
+        var hash = window.location.hash;
+        if (hash) {
+            var params = regexter.parseHash(hash);
+            regexp.value = params.regexp; 
+            regexter.setFlags(params.flags);
+            data.value = params.data;
+        }
+        else if (IS_LOCAL_STORAGE) {
             var flags = localStorage.getItem(FLAGS_KEY);
             regexp.value = localStorage.getItem(REG_KEY);            
             if (flags) regexter.setFlags(flags);
             data.value = localStorage.getItem(DATA_KEY);
         }                
         regexter.send({immediate: true});
+    };
+    
+    regexter.parseHash = function (hash) {
+        var match = hash.match(/[#&][^=]+=[^&]*/g),
+            map = {};
+        if (match) {
+            for (var i = match.length; i--;) {
+                var part = match[i].split('=');
+                map[part[0].slice(1)] = decodeURIComponent(part[1]);
+            }
+        }
+        return {
+            regexp : map.regexp || '',
+            flags  : map.flags  || '',
+            data   : map.data   || ''
+        };
+    };
+    
+    regexter.setPermalink = function () {
+        var link = BASE_URL + 
+                  '#regexp=' + encodeURIComponent(regexp.value) +
+                  '&flags=' + regexter.getFlags() + 
+                  '&data=' + encodeURIComponent(data.value);
+                  
+        permalink.innerHTML = '<a href="' + link + '">' + link + '</a>';
     };
     
     regexter.getFlags = function () {
@@ -97,6 +132,7 @@ var regexter = {};
                 localStorage.setItem(FLAGS_KEY, flags);
                 localStorage.setItem(DATA_KEY, data.value);
             }
+            regexter.setPermalink();
         };
         
         clearTimeout(timer);
