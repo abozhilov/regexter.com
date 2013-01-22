@@ -201,7 +201,7 @@ var regexter = {};
     };
 
     function parseDebug(dStr, data) {
-        var reg = /index[^\n]+\n[^:]+: (?:CHAR|BOL|EOL|BRK|NBRK|SUCCEED)|TIMEOUT/g,
+        var reg = /index[^\n]+\n[^:]+: (?:CHAR|BOL|EOL|BRK|NBRK|BACKREF|SUCCEED)|TIMEOUT/g,
             tokenReg = /CHAR|BOL|EOL|BRK|NBRK|SUCCEED|TIMEOUT/,
             res = dStr.match(reg),
             buffer = [],
