@@ -24,8 +24,8 @@ var regexter = {};
         '<' : '&lt;',
         '>' : '&gt;',
         '&' : '&amp;',
-        "'" : '&quot;',
-        '"' : '&#039;'
+        "'" : '&#39;',
+        '"' : '&quot;'
     };
     
     var IS_LOCAL_STORAGE = typeof localStorage != 'undefined',
