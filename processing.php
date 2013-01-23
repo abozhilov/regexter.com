@@ -4,9 +4,22 @@
     define('REG_LITERAL', '/^\/(?:\[(?:\x5C.|[^\x5C\]])*\]|\x5C.|[^\x5C\[\/])+\/[gim]*$/');
     define('BESEN', './bin/besen');
     
+    $patterns = array(
+        'bslash'    => '/\\\\/',     
+        'linefeeds' => '/[\n\r]/',       
+        'dquote'    => '/"/',
+        'squote'    => '/\'/'    
+    );
+    $replace = array (
+        'bslash'    => '\\x5C',
+        'linefeeds' => '\\x0A',                
+        'dquote'    => '\\x22',
+        'squote'    => '\\x27',
+    );
+    
     if (preg_match(REG_LITERAL, $_POST['reg'])) {
-        $reg = $_POST['reg'];
-        $str = preg_replace('/[\n\r]/', "'+'\\x0A", addslashes($_POST['data']));
+        $reg = addslashes($_POST['reg']);
+        $str = preg_replace($patterns, $replace, $_POST['data']);
         $js = escapeshellarg(sprintf(JS_CODE, $str, $reg));
         exec("echo $js | " . BESEN, $arr);
         echo implode("\n", $arr);    
