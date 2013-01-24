@@ -70,7 +70,7 @@ var regexter = {};
         if (match) {
             for (var i = match.length; i--;) {
                 var part = match[i].split('=');
-                map[part[0].slice(1)] = decodeURIComponent(part[1]);
+                map[part[0].slice(1)] = unescape(part[1]);
             }
         }
         return {
@@ -82,9 +82,9 @@ var regexter = {};
     
     regexter.setPermalink = function () {
         var link = BASE_URL + 
-                  '#regexp=' + encodeURIComponent(regexp.value) +
+                  '#regexp=' + escape(regexp.value) +
                   '&flags=' + regexter.getFlags() + 
-                  '&data=' + encodeURIComponent(data.value);
+                  '&data=' + escape(data.value);
                   
         permalink.innerHTML = '<a href="' + link + '">' + link + '</a>';
     };
