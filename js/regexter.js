@@ -176,7 +176,7 @@ var regexter = {};
         if (str.length > MAX_CHARS_LINE) {
             str = '... ' + str.slice(-MAX_CHARS_LINE);
         }
-        return str.replace(/[\n\r]/g, '');
+        return str.replace(/[\n\r]/g, ' ');
     };
     
     regexter.highlightMatch = function (str, start) {
@@ -230,7 +230,7 @@ var regexter = {};
     };
 
     function parseDebug(dStr, data, offsets) {
-        var reg = /index[^\n]+\n[^:]+: (?:CHAR|BOL|EOL|BRK|NBRK|BACKREF|SUCCEED)|TIMEOUT/g,
+        var reg = /index[^\n]+?result[^:]+: CHAR|index[^\n]+\n[^:]+: (?:BOL|EOL|BRK|NBRK|BACKREF|SUCCEED)|TIMEOUT/g,
             tokenReg = /CHAR|BOL|EOL|BRK|NBRK|SUCCEED|TIMEOUT|BACKREF/,
             res = dStr.match(reg),
             buffer = [],
@@ -276,7 +276,7 @@ var regexter = {};
                 prevIdx = idx;
             }
             if (token != SUCCEED) {
-                buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FAIL);    
+                buffer.push('<span class="line-number">' + (++line) + '</span>' + MATCH_FAIL);    
             }
             return buffer.join('\n') +
                     '\n======================\n' +
