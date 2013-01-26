@@ -188,7 +188,7 @@ var regexter = {};
                 start = 0;
             }
             else {
-                start -= diff;
+                start -= diff - 4;
             }
         }
         
