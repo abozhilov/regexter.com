@@ -1,6 +1,16 @@
 <?php
     define('MAX_BYTECODE_STEPS', max(pow(strlen($_POST['data']), 2) * 2, 100));
-    define('JS_CODE', "setRegExpTimeOutSteps(" . MAX_BYTECODE_STEPS . "); setRegExpDebugMode(1); ('%s').match(%s);");
+    define('JS_CODE', preg_replace('/[\r\n]/' , '', "
+        setRegExpTimeOutSteps(" . MAX_BYTECODE_STEPS . "); 
+        setRegExpDebugMode(1); 
+        var offset = [];
+        var str = ('%s').replace(%s, function(match) {
+            var start = arguments[arguments.length - 2];
+            offset.push([start, start + match.length]);
+            return '';
+        });
+        print('OFFSETS:' + JSON.stringify(offset));
+    "));
     define('REG_LITERAL', '/^\/(?:\[(?:\x5C.|[^\x5C\]])*\]|\x5C.|[^\x5C\[\/])+\/[gim]*$/');
     define('BESEN', './bin/besen');
     

@@ -1,8 +1,8 @@
 var regexter = {};
 (function () {
     var BASE_URL = 'http://regexter.com', 
-        DEBUG_HOLDER = 'debug-holder',
         MAX_CHARS_LINE = 100,
+        JSON_PARSE = typeof JSON != 'undefined' && typeof JSON.parse != 'undefined',
          
         MATCH_FOUND = '<span class="match">Match found</span>',
         MATCH_FAIL = '<span class="fail">Match failed</span>',
@@ -37,7 +37,7 @@ var regexter = {};
     var regexp, data,
         regErr, global, 
         ignoreCase, multiline,
-        permalink;
+        debugHolder, permalink;
         
     regexter.init = function () {
         regexp = document.getElementById('regex-field');
@@ -46,6 +46,7 @@ var regexter = {};
         global = document.getElementById('global-search');
         ignoreCase = document.getElementById('case-insensitive');
         multiline = document.getElementById('multiline-search');
+        debugHolder = document.getElementById('debug-holder');
         permalink = document.getElementById('permalink');
         
         var hash = window.location.hash;
@@ -158,12 +159,10 @@ var regexter = {};
     };
     
     regexter.flush = function () {
-        var debugHolder = document.getElementById(DEBUG_HOLDER);
         debugHolder.innerHTML = '<pre>Not available</pre>';
     };
     
     regexter.output = function(debug) {
-        var debugHolder = document.getElementById(DEBUG_HOLDER);
         debugHolder.innerHTML = '<pre>' + debug + '</pre>';
     };
     
@@ -180,6 +179,34 @@ var regexter = {};
         return str.replace(/[\n\r]/g, '');
     };
     
+    regexter.highlightMatch = function (str, start) {
+        var len = str.length,
+            diff = len - MAX_CHARS_LINE,
+            fStr = regexter.truncate(str);
+        if (len > MAX_CHARS_LINE) {
+            if (start < diff) {
+                start = 0;
+            }
+            else {
+                start -= diff;
+            }
+        }
+        
+        return '<span class="processing">' + regexter.escapeHTML(fStr.slice(0, start)) + '</span>' +
+               '<span class="match">' + regexter.escapeHTML(fStr.slice(start)) + '</span>';
+    };
+    
+    regexter.getOffsets = function (str) {
+        var match = /^OFFSETS:.+$/m.exec(str);
+        if (match) {
+            var arrStr = match[0].slice(8);
+            if (JSON_PARSE) 
+                return JSON.parse(arrStr);
+            else
+                return eval(arrStr);
+        }
+        return [];
+    };
          
     regexter.getDebug = function (reg, data) {
         var xhr = typeof XMLHttpRequest != 'undefined' ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP'),
@@ -190,7 +217,9 @@ var regexter = {};
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4) {
                 if (xhr.status == 200) {
-                    regexter.output(parseDebug(xhr.responseText, data));
+                    var response = xhr.responseText,
+                        offsets = regexter.getOffsets(response);
+                    regexter.output(parseDebug(response, data, offsets));
                 }
                 else if (xhr.status > 400) {
                     regexter.output(UNEXPECTED_ERROR);
@@ -200,14 +229,16 @@ var regexter = {};
         xhr.send(post);      
     };
 
-    function parseDebug(dStr, data) {
+    function parseDebug(dStr, data, offsets) {
         var reg = /index[^\n]+\n[^:]+: (?:CHAR|BOL|EOL|BRK|NBRK|BACKREF|SUCCEED)|TIMEOUT/g,
             tokenReg = /CHAR|BOL|EOL|BRK|NBRK|SUCCEED|TIMEOUT|BACKREF/,
             res = dStr.match(reg),
             buffer = [],
             globalIdx = 0,
-            line = 1,
-            prevIdx, prevToken;
+            offsetIdx = 0,
+            line = 0,
+            prevIdx, prevToken,
+            matchPos;
             
         if (res) {
             for (var i = 0, len = res.length; i < len; i++) {
@@ -227,16 +258,22 @@ var regexter = {};
                 }
                 
                 if (token == SUCCEED) {
-                    buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FOUND);
-                    globalIdx = idx;                    
+                    matchPos = offsets[offsetIdx];
+                    if (matchPos) {
+                        buffer[buffer.length - 1] = '<span class="line-number">' + line + '</span>' + regexter.highlightMatch(currStr, matchPos[0] - globalIdx, matchPos[1] - globalIdx) + ' < ' + MATCH_FOUND;                 
+                    }
+                    else {
+                        buffer[buffer.length - 1] = '<span class="line-number">' + line + '</span>' + MATCH_FOUND;
+                    }
+                    globalIdx = idx;
+                    offsetIdx++;                    
                 }
                 else {
-                    buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(currStr)) + '</span>');
-                }
-                    
+                    line++;                    
+                    buffer.push('<span class="line-number">' + line + '</span><span class="processing">' + regexter.escapeHTML(regexter.truncate(currStr)) + '</span>');                    
+                }   
                 prevToken = token;
                 prevIdx = idx;
-                line++;
             }
             if (token != SUCCEED) {
                 buffer.push('<span class="line-number">' + line + '</span>' + MATCH_FAIL);    
