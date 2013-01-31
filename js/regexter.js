@@ -62,19 +62,19 @@ var regexter = {};
             if (flags) regexter.setFlags(flags);
             data.value = localStorage.getItem(DATA_KEY);
         }
-        regexter.initEvents();                
+        regexter.initEvents();
+        regexter.syncField(data);
         regexter.send({immediate: true});
     };
     
     regexter.initEvents = function () {
-        var immediateSend = function (){regexter.send({immediate: true});},
-            delayedSend = function(){regexter.send({immediate: false});};
+        var immediateSend = function (){regexter.send({immediate: true});};
             
         regexter.addEvent(ignoreCase, 'change', immediateSend);
         regexter.addEvent(global, 'change', immediateSend);
         regexter.addEvent(multiline, 'change', immediateSend);        
-        regexter.addOnInput(regexp, delayedSend);
-        regexter.addOnInput(data, delayedSend);
+        regexter.addOnInput(regexp, function(){regexter.send({immediate: false});});
+        regexter.addOnInput(data, function(){regexter.syncField(data); regexter.send({immediate: false});});
     };
     
     regexter.addEvent = function (elm, evt, callback) {
@@ -211,6 +211,12 @@ var regexter = {};
     
     regexter.output = function(debug) {
         debugHolder.innerHTML = '<pre>' + debug + '</pre>';
+    };
+    
+    regexter.syncField = function (field) {
+        var pre = field.parentNode.getElementsByTagName('pre')[0];
+        pre.innerHTML = regexter.escapeHTML(field.value) + '<br>&nbsp;';                        
+        field.style.height = (pre.offsetHeight - 5) + 'px'; 
     };
     
     regexter.escapeHTML = function (str) {
