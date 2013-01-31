@@ -132,7 +132,7 @@ code {
 }
 
 .match {
-    background-color: #AAFFAA;
+    background-color: #00CC00;
 }
 
 .fail {
@@ -195,6 +195,10 @@ code {
     white-space: pre-wrap;
     word-wrap: break-word;    
     color: #FFFFFF;
+}
+
+.smart-textarea pre .match {
+    color: #00CC00;
 }
 /* END Smart Textarea */
 
