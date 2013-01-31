@@ -61,8 +61,55 @@ var regexter = {};
             regexp.value = localStorage.getItem(REG_KEY);            
             if (flags) regexter.setFlags(flags);
             data.value = localStorage.getItem(DATA_KEY);
-        }                
+        }
+        regexter.initEvents();                
         regexter.send({immediate: true});
+    };
+    
+    regexter.initEvents = function () {
+        var immediateSend = function (){regexter.send({immediate: true});},
+            delayedSend = function(){regexter.send({immediate: false});};
+            
+        regexter.addEvent(ignoreCase, 'change', immediateSend);
+        regexter.addEvent(global, 'change', immediateSend);
+        regexter.addEvent(multiline, 'change', immediateSend);        
+        regexter.addOnInput(regexp, delayedSend);
+        regexter.addOnInput(data, delayedSend);
+    };
+    
+    regexter.addEvent = function (elm, evt, callback) {
+        if (typeof elm.addEventListener != 'undefined') {
+            elm.addEventListener(evt, callback, false);    
+        }
+        else if (typeof elm.attachEvent != 'undefined') {
+            elm.attachEvent('on' + evt,  callback); 
+        }
+        else {
+            elm['on' + evt] = callback;    
+        }
+    };
+    
+    regexter.removeEvent = function (elm, evt, callback) {
+        if (typeof elm.removeEventListener != 'undefined') {
+            elm.removeEventListener(evt, callback, false);    
+        }
+        else if (typeof elm.attachEvent != 'undefined') {
+            elm.detachEvent('on' + evt,  callback); 
+        }
+        else {
+            elm['on' + evt] = null;    
+        }
+    };
+    
+    regexter.addOnInput = function (elm, callback) {
+        regexter.addEvent(elm, 'input', function onInput() {
+            regexter.removeEvent(elm, 'keyup', callback);
+            regexter.removeEvent(elm, 'change', callback);
+            regexter.removeEvent(elm, 'input', onInput);    
+        });        
+        regexter.addEvent(elm, 'input', callback);
+        regexter.addEvent(elm, 'keyup', callback);
+        regexter.addEvent(elm, 'change', callback);        
     };
     
     regexter.parseHash = function (hash) {
@@ -285,3 +332,5 @@ var regexter = {};
         return dStr;
     }
 })();
+
+regexter.addEvent(window, 'load', regexter.init);
