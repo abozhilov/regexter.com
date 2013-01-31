@@ -34,14 +34,16 @@ var regexter = {};
         DATA_KEY = 'data';
         
         
-    var regexp, data,
+    var regexp, 
+        dataField, dataFieldPre,
         regErr, global, 
         ignoreCase, multiline,
         debugHolder, permalink;
         
     regexter.init = function () {
         regexp = document.getElementById('regex-field');
-        data = document.getElementById('regex-data');
+        dataField = document.getElementById('regex-data');
+        dataFieldPre = document.getElementById('regex-data-pre');
         regErr = document.getElementById('regex-error');
         global = document.getElementById('global-search');
         ignoreCase = document.getElementById('case-insensitive');
@@ -54,16 +56,16 @@ var regexter = {};
             var params = regexter.parseHash(hash);
             regexp.value = params.regexp; 
             regexter.setFlags(params.flags);
-            data.value = params.data;
+            dataField.value = params.data;
         }
         else if (IS_LOCAL_STORAGE) {
             var flags = localStorage.getItem(FLAGS_KEY);
             regexp.value = localStorage.getItem(REG_KEY);            
             if (flags) regexter.setFlags(flags);
-            data.value = localStorage.getItem(DATA_KEY);
+            dataField.value = localStorage.getItem(DATA_KEY);
         }
         regexter.initEvents();
-        regexter.syncField(data);
+        regexter.syncField(dataField);
         regexter.send({immediate: true});
     };
     
@@ -74,7 +76,7 @@ var regexter = {};
         regexter.addEvent(global, 'change', immediateSend);
         regexter.addEvent(multiline, 'change', immediateSend);        
         regexter.addOnInput(regexp, function(){regexter.send({immediate: false});});
-        regexter.addOnInput(data, function(){regexter.syncField(data); regexter.send({immediate: false});});
+        regexter.addOnInput(dataField, function(){regexter.syncField(dataField); regexter.send({immediate: false});});
     };
     
     regexter.addEvent = function (elm, evt, callback) {
@@ -132,7 +134,7 @@ var regexter = {};
         var link = BASE_URL + 
                   '#regexp=' + escape(regexp.value) +
                   '&flags=' + regexter.getFlags() + 
-                  '&data=' + escape(data.value);
+                  '&data=' + escape(dataField.value);
                   
         permalink.innerHTML = '<a href="' + link + '">' + link + '</a>';
     };
@@ -168,8 +170,8 @@ var regexter = {};
                 return;
             }
             
-            if (regexp.value.length && data.value.length) {
-                regexter.getDebug(regstr, data.value);            
+            if (regexp.value.length && dataField.value.length) {
+                regexter.getDebug(regstr, dataField.value);            
             }
             else {
                 regexter.flush();
@@ -178,7 +180,7 @@ var regexter = {};
             if (IS_LOCAL_STORAGE) {
                 localStorage.setItem(REG_KEY, regexp.value);   
                 localStorage.setItem(FLAGS_KEY, flags);
-                localStorage.setItem(DATA_KEY, data.value);
+                localStorage.setItem(DATA_KEY, dataField.value);
             }
             regexter.setPermalink();
         };
@@ -233,7 +235,7 @@ var regexter = {};
     };
     
     regexter.highlightData = function (offsets) {
-        var rawStr = data.value,
+        var rawStr = dataField.value,
             str = '',
             start = 0;
         for (var i = 0, len = offsets.length; i < len; i++) {
@@ -242,7 +244,7 @@ var regexter = {};
             start = pos[1];
         }
         str += regexter.escapeHTML(rawStr.slice(start));
-        data.value = str;
+        dataFieldPre.innerHTML = str;
     };
     
     regexter.highlightDebug = function (str, start) {
