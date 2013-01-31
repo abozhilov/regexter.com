@@ -287,9 +287,8 @@ var regexter = {};
                 if (xhr.status == 200) {
                     var response = xhr.responseText,
                         offsets = regexter.getOffsets(response);
-                    if (offsets.length) {
-                        regexter.highlightData(offsets);
-                    }
+                    
+                    regexter.highlightData(offsets);
                     regexter.output(parseDebug(response, data, offsets));
                 }
                 else if (xhr.status > 400) {
