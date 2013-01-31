@@ -232,7 +232,20 @@ var regexter = {};
         return str.replace(/[\n\r]/g, ' ');
     };
     
-    regexter.highlightMatch = function (str, start) {
+    regexter.highlightData = function (offsets) {
+        var rawStr = data.value,
+            str = '',
+            start = 0;
+        for (var i = 0, len = offsets.length; i < len; i++) {
+            var pos = offsets[i];
+            str += regexter.escapeHTML(rawStr.slice(start, pos[0])) + '<span class="match">' + regexter.escapeHTML(rawStr.slice(pos[0], pos[1])) + '</span>';
+            start = pos[1];
+        }
+        str += regexter.escapeHTML(rawStr.slice(start));
+        data.value = str;
+    };
+    
+    regexter.highlightDebug = function (str, start) {
         var len = str.length,
             diff = len - MAX_CHARS_LINE,
             fStr = regexter.truncate(str);
@@ -272,6 +285,9 @@ var regexter = {};
                 if (xhr.status == 200) {
                     var response = xhr.responseText,
                         offsets = regexter.getOffsets(response);
+                    if (offsets.length) {
+                        regexter.highlightData(offsets);
+                    }
                     regexter.output(parseDebug(response, data, offsets));
                 }
                 else if (xhr.status > 400) {
@@ -313,7 +329,7 @@ var regexter = {};
                 if (token == SUCCEED) {
                     matchPos = offsets[offsetIdx];
                     if (matchPos) {
-                        buffer[buffer.length - 1] = '<span class="line-number">' + line + '</span>' + regexter.highlightMatch(currStr, matchPos[0] - globalIdx, matchPos[1] - globalIdx) + ' < ' + MATCH_FOUND;                 
+                        buffer[buffer.length - 1] = '<span class="line-number">' + line + '</span>' + regexter.highlightDebug(currStr, matchPos[0] - globalIdx, matchPos[1] - globalIdx) + ' < ' + MATCH_FOUND;                 
                     }
                     else {
                         buffer[buffer.length - 1] = '<span class="line-number">' + line + '</span>' + MATCH_FOUND;

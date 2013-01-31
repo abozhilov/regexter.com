@@ -15,17 +15,17 @@
                     <tr>
                         <td class="regex-label"><strong>re</strong></td>
                         <td>
-                            <input id="regex-field" tabindex="2" type="text" name="regex" /> 
+                            <input id="regex-field" type="text" name="regex" /> 
                         </td>                 
                     </tr>
                     <tr>
                         <td class="regex-label"><strong>flags</strong></td>
                         <td>
-                            <input tabindex="3" type="checkbox" name="ignorecase" id="case-insensitive" />
+                            <input type="checkbox" name="ignorecase" id="case-insensitive" />
                             <label for="case-insensitive">Ignore case</label>
-                            <input tabindex="4" type="checkbox" name="global" id="global-search" />
+                            <input type="checkbox" name="global" id="global-search" />
                             <label for="global-search">Global search</label>                        
-                            <input tabindex="5" type="checkbox" name="multiline" id="multiline-search" />
+                            <input type="checkbox" name="multiline" id="multiline-search" />
                             <label for="multiline-search">Multiline</label>  
                             <span id="regex-error" class="error-msg"></span>                                              
                         </td>
@@ -36,7 +36,7 @@
                         <td>
                             <div class="smart-textarea">
                                 <pre></pre>
-                                <textarea id="regex-data" tabindex="6" name="data" cols="50" rows="20"></textarea>
+                                <textarea id="regex-data" spellcheck="false" name="data" cols="50" rows="20"></textarea>
                             </div>
                         </td>
                     </tr>
